@@ -41,8 +41,9 @@ class ACAutomaton:
         prompt = f"你是一個資深競賽選手。請寫出這題 ZeroJudge 的 C++ 代碼。只輸出代碼，不要 Markdown 標籤：\n{desc}"
         
         # 根據你的清單，優先使用 2.5-flash，若額度爆了則嘗試 2.0
-        model_pool = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
-        
+        # 優先召喚最強邏輯大腦
+        model_pool = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"]        
+
         for model_name in model_pool:
             try:
                 print(f"[*] 嘗試模型: {model_name}...")
