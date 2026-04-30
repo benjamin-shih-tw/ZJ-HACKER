@@ -18,7 +18,7 @@ with st.sidebar:
 class ACAutomaton:
     def __init__(self, key, sid):
         self.session = requests.Session()
-        self.base_url = "[https://zerojudge.tw](https://zerojudge.tw)"
+        self.base_url = "https://zerojudge.tw"
         self.client = anthropic.Anthropic(api_key=key)
         cookie = requests.cookies.create_cookie(name='JSESSIONID', value=sid)
         self.session.cookies.set_cookie(cookie)
