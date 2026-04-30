@@ -50,12 +50,27 @@ class ACAutomaton:
                 st.error("找不到題目內容，請檢查編號。")
                 return
 
-            # 2. AI 解題
-            st.write("🧠 AI 正在思考解法 (Gemini 2.5)...")
-            prompt = f"你是一個資深競賽選手。請寫出這題 ZeroJudge 的 C++ 代碼。只輸出代碼，不要 Markdown 標籤：\n{content.get_text()}"
+            # 2. AI 解題 (全面升級版)
+            st.write("🧠 AI 正在思考解法 (Gemini 2.5 Pro 頂尖邏輯)...")
+            
+            # 終極演算法提示詞
+            prompt = f"""
+            你是一位 IOI 級別的頂尖 C++ 演算法選手。請為這道 ZeroJudge 題目撰寫可以一次 AC 的 C++ 程式碼。
+
+            【嚴格規範】：
+            1. 必須考慮時間複雜度，請加入 `ios_base::sync_with_stdio(false); cin.tie(0);` 來優化 I/O。
+            2. 測資可能極大，請預設使用 `long long` 避免整數溢位 (Overflow)。
+            3. ZeroJudge 通常有多筆測資，請務必使用 `while (cin >> ...)` 的方式讀取到 EOF。
+            4. 注意邊界條件 (Edge cases)，例如 N=0 或空字串的情況。
+            5. 只輸出純 C++ 代碼，絕對不要包含 Markdown 標籤 (如 ```cpp) 或任何解釋性文字，否則會導致編譯錯誤。
+
+            題目敘述如下：
+            {content.get_text()}
+            """
             
             try:
-                ai_res = self.client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+                # 換上最強邏輯大腦 Pro
+                ai_res = self.client.models.generate_content(model="gemini-2.5-pro", contents=prompt)
                 code = ai_res.text.strip().replace('```cpp', '').replace('```', '').strip()
                 st.code(code, language='cpp')
             except Exception as e:
@@ -89,7 +104,7 @@ class ACAutomaton:
                     st.balloons()
                     return
                 elif any(x in res_status.text for x in ["WA", "CE", "TLE", "RE"]):
-                    st.error("評分結果非 AC，請檢查代碼或重試。")
+                    st.error("評分結果非 AC，請檢查代碼邏輯或重試。")
                     return
             st.warning("評分逾時。")
 
