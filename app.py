@@ -53,15 +53,21 @@ class ACAutomaton:
             # 2. AI 解題 (具備自動降檔與備援機制)
             st.write("🧠 AI 正在思考解法...")
             
+            # 終極演算法提示詞 (強化讀題與格式對齊)
             prompt = f"""
             你是一位 IOI 級別的頂尖 C++ 演算法選手。請為這道 ZeroJudge 題目撰寫可以一次 AC 的 C++ 程式碼。
 
-            【嚴格規範】：
-            1. 必須考慮時間複雜度，請加入 `ios_base::sync_with_stdio(false); cin.tie(0);` 來優化 I/O。
-            2. 測資可能極大，請預設使用 `long long` 避免整數溢位 (Overflow)。
-            3. ZeroJudge 通常有多筆測資，請務必使用 `while (cin >> ...)` 的方式讀取到 EOF。
-            4. 注意邊界條件 (Edge cases)，例如 N=0 或空字串的情況。
-            5. 只輸出純 C++ 代碼，絕對不要包含 Markdown 標籤 (如 ```cpp) 或任何解釋性文字，否則會導致編譯錯誤。
+            【致命要求：輸出格式必須 100% 一致】：
+            1. 仔細閱讀題目的「輸出說明」。你的輸出文字、空格、大小寫、標點符號必須與範例完全一模一樣！
+            2. 如果題目要求 `Two different roots x1=3 , x2=2`，絕對不能只印出數字。
+            3. 如果題目要求無實數解時輸出 `No real root`，絕對不要自作聰明去算虛數/複數。
+            4. 注意 `-0` 的問題，如果算出 `-0` 請轉換為 `0`。
+
+            【常規競賽規範】：
+            5. 必須考慮時間複雜度，請加入 `ios_base::sync_with_stdio(false); cin.tie(0);` 來優化 I/O。
+            6. 測資可能極大，請預設使用 `long long` 避免整數溢位 (Overflow)。
+            7. ZeroJudge 通常有多筆測資，請務必使用 `while (cin >> ...)` 的方式讀取到 EOF。
+            8. 只輸出純 C++ 代碼，絕對不要包含 Markdown 標籤 (如 ```cpp) 或任何解釋性文字，否則會導致 CE。
 
             題目敘述如下：
             {content.get_text()}
