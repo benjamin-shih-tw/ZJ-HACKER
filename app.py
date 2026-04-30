@@ -2,15 +2,15 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import time
-import anthropic
+from google import genai
 
 st.set_page_config(page_title="真・AC 自動機", page_icon="🤖")
-st.title("🤖 真・AC 自動機 (ZeroJudge - Claude 版)")
-st.caption("2026 未來版 - 自動抓題、Claude AI 解題、一鍵 AC")
+st.title("🤖 真・AC 自動機 (ZeroJudge - Gemini 版)")
+st.caption("2026 未來版 - 自動抓題、Gemini AI 解題、一鍵 AC")
 
 with st.sidebar:
     st.header("🔑 個人憑證設定")
-    claude_key = st.text_input("Claude API Key", type="password", help="請至 Anthropic Console 申請")
+    gemini_key = st.text_input("Gemini API Key", type="password", help="請至 Google AI Studio 申請")
     session_id = st.text_input("ZeroJudge JSESSIONID", help="從瀏覽器 Cookies 取得")
     st.divider()
     st.markdown("### 使用說明\n1. 填入 API Key\n2. 填入 JSESSIONID\n3. 輸入題號並開始")
@@ -19,7 +19,7 @@ class ACAutomaton:
     def __init__(self, key, sid):
         self.session = requests.Session()
         self.base_url = "https://zerojudge.tw"
-        self.client = anthropic.Anthropic(api_key=key)
+        self.client = genai.Client(api_key=key)
         cookie = requests.cookies.create_cookie(name='JSESSIONID', value=sid)
         self.session.cookies.set_cookie(cookie)
         self.session.headers.update({'User-Agent': 'Mozilla/5.0'})
@@ -38,7 +38,7 @@ class ACAutomaton:
                 st.error("找不到題目內容，請檢查編號。")
                 return
 
-            st.write("🧠 Claude 正在思考解法...")
+            st.write("🧠 Gemini 正在思考解法...")
             prompt = f"""
             你是一位 IOI 級別的頂尖 C++ 演算法選手。請為這道 ZeroJudge 題目撰寫可以一次 AC 的 C++ 程式碼。
 
@@ -57,31 +57,27 @@ class ACAutomaton:
             {content.get_text()}
             """
             
-            model_pool = ["claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"]
+            model_pool = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"]
             code = ""
             
             for model_name in model_pool:
                 try:
-                    ai_res = self.client.messages.create(
-                        model=model_name,
-                        max_tokens=4096,
-                        messages=[{"role": "user", "content": prompt}]
-                    )
-                    code = ai_res.content[0].text.strip().replace('```cpp', '').replace('```', '').strip()
+                    ai_res = self.client.models.generate_content(model=model_name, contents=prompt)
+                    code = ai_res.text.strip().replace('```cpp', '').replace('```', '').strip()
                     st.success(f"✅ 成功使用大腦：{model_name}")
                     st.code(code, language='cpp')
                     break
                 except Exception as e:
                     err_msg = str(e)
-                    if any(keyword in err_msg for keyword in ["429", "rate_limit", "529", "overloaded", "503"]):
+                    if any(keyword in err_msg for keyword in ["429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE"]):
                         st.warning(f"⚠️ `{model_name}` 暫時無法使用，切換備用模型...")
                         continue
                     else:
-                        st.error(f"發生未知的 Claude 錯誤: {err_msg}")
+                        st.error(f"發生未知的 AI 錯誤: {err_msg}")
                         return
 
             if not code:
-                st.error("❌ 所有 Claude 模型的額度都已用盡！")
+                st.error("❌ 所有 AI 模型的額度都已用盡！")
                 return
 
             st.write("🚀 正在提交代碼...")
@@ -115,10 +111,10 @@ class ACAutomaton:
 
 target_pid = st.text_input("題目編號", value="a006", placeholder="例如: a006")
 if st.button("🚀 開始攻克", type="primary"):
-    if not claude_key or not session_id:
+    if not gemini_key or not session_id:
         st.warning("請先在側邊欄填入 API Key 和 JSESSIONID！")
     else:
-        bot = ACAutomaton(claude_key, session_id)
+        bot = ACAutomaton(gemini_key, session_id)
         if bot.check_login():
             bot.run_process(target_pid)
         else:
