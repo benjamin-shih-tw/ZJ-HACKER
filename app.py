@@ -50,10 +50,9 @@ class ACAutomaton:
                 st.error("找不到題目內容，請檢查編號。")
                 return
 
-            # 2. AI 解題 (全面升級版)
-            st.write("🧠 AI 正在思考解法 (Gemini 2.5 Pro 頂尖邏輯)...")
+            # 2. AI 解題 (具備自動降檔與備援機制)
+            st.write("🧠 AI 正在思考解法...")
             
-            # 終極演算法提示詞
             prompt = f"""
             你是一位 IOI 級別的頂尖 C++ 演算法選手。請為這道 ZeroJudge 題目撰寫可以一次 AC 的 C++ 程式碼。
 
@@ -68,15 +67,29 @@ class ACAutomaton:
             {content.get_text()}
             """
             
-            try:
-                # 換上最強邏輯大腦 Pro
-                ai_res = self.client.models.generate_content(model="gemini-2.5-pro", contents=prompt)
-                code = ai_res.text.strip().replace('```cpp', '').replace('```', '').strip()
-                st.code(code, language='cpp')
-            except Exception as e:
-                st.error(f"AI 思考失敗: {e}")
-                return
+            # 建立模型備援池：先試最強的 Pro，不行就換最新的 Flash，最後是 2.0 Flash
+            model_pool = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"]
+            code = ""
+            
+            for model_name in model_pool:
+                try:
+                    ai_res = self.client.models.generate_content(model=model_name, contents=prompt)
+                    code = ai_res.text.strip().replace('```cpp', '').replace('```', '').strip()
+                    st.success(f"✅ 成功使用大腦：{model_name}")
+                    st.code(code, language='cpp')
+                    break  # 成功生成代碼，跳出迴圈
+                except Exception as e:
+                    err_msg = str(e)
+                    if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
+                        st.warning(f"⚠️ `{model_name}` 額度耗盡，自動切換下一個模型...")
+                        continue  # 繼續嘗試下一個模型
+                    else:
+                        st.error(f"發生未知的 AI 錯誤: {err_msg}")
+                        return
 
+            if not code:
+                st.error("❌ 所有 AI 模型的額度都已用盡！請等待幾分鐘，或在左側更換新的 API Key。")
+                return
             # 3. 提交
             st.write("🚀 正在提交代碼...")
             prob_url = f"{self.base_url}/ShowProblem?problemid={pid}"
