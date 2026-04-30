@@ -80,8 +80,9 @@ class ACAutomaton:
                     break  # 成功生成代碼，跳出迴圈
                 except Exception as e:
                     err_msg = str(e)
-                    if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
-                        st.warning(f"⚠️ `{model_name}` 額度耗盡，自動切換下一個模型...")
+                    # 同時捕捉 429 (額度用盡) 與 503 (伺服器滿載)
+                    if any(keyword in err_msg for keyword in ["429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE"]):
+                        st.warning(f"⚠️ `{model_name}` 暫時無法使用 (額度限制或伺服器滿載)，切換備用模型...")
                         continue  # 繼續嘗試下一個模型
                     else:
                         st.error(f"發生未知的 AI 錯誤: {err_msg}")
