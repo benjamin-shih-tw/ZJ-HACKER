@@ -9,6 +9,7 @@ PROBLEM_ID = 'a001'            # 替換成你要提交的題目編號
 CODE_FILE = 'solution.cpp'     # 你的程式碼檔案路徑
 # ZeroJudge 語言代碼參考 (需確認當前網頁實際 value)：
 # C: 'c', C++: 'cpp', Python: 'python', Java: 'java'
+# just test
 LANGUAGE = 'cpp'               
 # ==============================================
 
